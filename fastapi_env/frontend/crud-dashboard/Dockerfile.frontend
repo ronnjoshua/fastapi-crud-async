@@ -1,0 +1,27 @@
+# Use Node.js as base image
+FROM node:18-alpine AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Copy only package.json and package-lock.json first
+COPY package.json package-lock.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy the entire frontend project
+COPY . .
+
+# Build the React app
+RUN npm run build
+
+# Use Nginx to serve the app
+FROM nginx:alpine
+COPY --from=builder /app/build /usr/share/nginx/html
+
+# Expose port 80
+EXPOSE 80
+
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]
